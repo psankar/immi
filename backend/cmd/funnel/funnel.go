@@ -1,7 +1,19 @@
 package main
 
-import "log"
+import (
+	"immi/internal/funnel"
+	"log"
+	"net/http"
+)
 
 func main() {
-	log.Println("Hello World")
+	server, err := funnel.NewServer()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = http.ListenAndServe(":8080", server.Handler())
+	if err != nil {
+		log.Fatal(err)
+	}
 }
