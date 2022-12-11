@@ -1,6 +1,7 @@
 package funnel
 
 import (
+	"context"
 	"encoding/json"
 	"immi/pkg/dao"
 	"immi/pkg/immi"
@@ -12,11 +13,31 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type FunnelServer struct {
+type FunnelConfig struct {
+	BatchSize     int
+	BatchDuration time.Duration
 }
 
-func NewServer() (*FunnelServer, error) {
-	return &FunnelServer{}, nil
+type FunnelServer struct {
+	batchSize     int
+	batchDuration time.Duration
+	batchChan     chan dao.Immi
+	batch         []dao.Immi
+	ctx           context.Context
+}
+
+func NewServer(config FunnelConfig) (*FunnelServer, error) {
+	// TODO: validate config
+	server := &FunnelServer{
+		batchSize:     config.BatchSize,
+		batchDuration: config.BatchDuration,
+		batchChan:     make(chan dao.Immi),
+		batch:         make([]dao.Immi, 0, config.BatchSize),
+		ctx:           context.TODO(),
+	}
+
+	go server.batcher()
+	return server, nil
 }
 
 func (s *FunnelServer) Handler() http.Handler {
@@ -41,6 +62,8 @@ func (s *FunnelServer) immiHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: Validate newImmi
+
 	immiID := xid.New().String()
 
 	immiDAO := dao.Immi{
@@ -50,7 +73,33 @@ func (s *FunnelServer) immiHandler(w http.ResponseWriter, r *http.Request) {
 		CTime:  time.Now().UTC(),
 	}
 
-	_ = immiDAO // TODO: Write to DB
+	s.batchChan <- immiDAO
 
 	w.Write([]byte(immiID))
+}
+
+func (s *FunnelServer) batcher() {
+	// We use a for-select here instead of a Mutex for s.batch,
+	// because the SELECT does not lead to starvation of the
+	// DB Writes operation, due to pseudo-randomness. Locks
+	// do not guarantee against the DB Writer starvation.
+	for {
+		timer := time.NewTimer(s.batchDuration)
+		select {
+		case immi := <-s.batchChan:
+			s.batch = append(s.batch, immi)
+		case <-s.ctx.Done():
+			// TODO: Graceful shutdown
+		case <-timer.C:
+			if len(s.batch) == 0 {
+				// No Immis to write as of now
+				continue
+			}
+			x := s.batch
+			s.batch = make([]dao.Immi, 0, s.batchSize)
+
+			// TODO: Write to DB
+			log.Printf("Write to DB: %v", len(x))
+		}
+	}
 }

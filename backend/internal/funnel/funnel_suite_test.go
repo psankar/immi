@@ -12,6 +12,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -26,7 +27,11 @@ var testServer *httptest.Server
 var immiURL string
 
 var _ = BeforeSuite(func() {
-	server, err := funnel.NewServer()
+	config := funnel.FunnelConfig{
+		BatchSize:     1024,
+		BatchDuration: time.Second * 3,
+	}
+	server, err := funnel.NewServer(config)
 	Expect(err).To(BeNil())
 
 	testServer = httptest.NewServer(server.Handler())
@@ -109,12 +114,13 @@ var _ = Describe("immis", func() {
 
 		resp, err := testServer.Client().Do(req)
 		Expect(err).To(BeNil())
-
 		Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
 		b, err := io.ReadAll(resp.Body)
 		Expect(err).To(BeNil())
-
 		log.Println("Response is: ", string(b))
+
+		// Wait for some time, so the batch write would complete
+		<-time.After(time.Second * 10)
 	})
 })
