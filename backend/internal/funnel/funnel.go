@@ -87,6 +87,7 @@ func (s *FunnelServer) batcher() {
 		timer := time.NewTimer(s.batchDuration)
 		select {
 		case immi := <-s.batchChan:
+			timer.Stop() // This is not needed perhaps, just to be safe
 			s.batch = append(s.batch, immi)
 		case <-s.ctx.Done():
 			// TODO: Graceful shutdown

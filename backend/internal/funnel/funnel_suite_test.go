@@ -28,7 +28,7 @@ var immiURL string
 
 var _ = BeforeSuite(func() {
 	config := funnel.FunnelConfig{
-		BatchSize:     1024,
+		BatchSize:     3,
 		BatchDuration: time.Second * 3,
 	}
 	server, err := funnel.NewServer(config)
