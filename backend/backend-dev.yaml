@@ -42,3 +42,16 @@ spec:
               memory: "128Mi"
           ports:
             - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: funnel
+  namespace: immi
+spec:
+  selector:
+    app: funnel
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
