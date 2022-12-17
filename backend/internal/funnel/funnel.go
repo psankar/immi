@@ -3,6 +3,8 @@ package funnel
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"immi/internal/idb"
 	"immi/pkg/dao"
 	"immi/pkg/immi"
 	"net/http"
@@ -10,12 +12,15 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 type FunnelConfig struct {
 	BatchSize     int
 	BatchDuration time.Duration
+	DB            idb.IDB
+	Logger        *zerolog.Logger
 }
 
 type FunnelServer struct {
@@ -24,6 +29,8 @@ type FunnelServer struct {
 	batchChan     chan dao.Immi
 	batch         []dao.Immi
 	ctx           context.Context
+	db            idb.IDB
+	log           *zerolog.Logger
 }
 
 func NewServer(config FunnelConfig) (*FunnelServer, error) {
@@ -34,6 +41,8 @@ func NewServer(config FunnelConfig) (*FunnelServer, error) {
 		batchChan:     make(chan dao.Immi),
 		batch:         make([]dao.Immi, 0, config.BatchSize),
 		ctx:           context.TODO(),
+		db:            config.DB,
+		log:           config.Logger,
 	}
 
 	go server.batcher()
@@ -96,11 +105,19 @@ func (s *FunnelServer) batcher() {
 				// No Immis to write as of now
 				continue
 			}
-			x := s.batch
+			immis := s.batch
 			s.batch = make([]dao.Immi, 0, s.batchSize)
-
-			// TODO: Write to DB
-			log.Printf("Write to DB: %v", len(x))
+			err := s.db.AppendImmis(immis)
+			if err != nil {
+				if errors.Is(err, idb.ErrInternal) {
+					// Likely case as validations would have
+					// handled user errors already
+					s.log.Error().Err(err)
+				} else {
+					// TODO: Handle user errors
+					_ = err
+				}
+			}
 		}
 	}
 }
