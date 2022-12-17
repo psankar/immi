@@ -58,7 +58,7 @@ func (s *FunnelServer) immiHandler(w http.ResponseWriter, r *http.Request) {
 	userIDRaw := r.Header.Get(immi.UserHeader)
 	userID, err := strconv.ParseInt(userIDRaw, 0, 64)
 	if err != nil {
-		log.Error().Msg("userID not set in incoming request")
+		log.Error().Msgf("invalid userID %q", userIDRaw)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
