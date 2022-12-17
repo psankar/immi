@@ -3,7 +3,6 @@ package funnel
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"immi/internal/idb"
 	"immi/pkg/dao"
 	"immi/pkg/immi"
@@ -82,7 +81,14 @@ func (s *FunnelServer) immiHandler(w http.ResponseWriter, r *http.Request) {
 		CTime:  time.Now().UTC(),
 	}
 
-	s.batchChan <- immiDAO
+	select {
+	case s.batchChan <- immiDAO:
+		// Successfully sent
+	case <-time.After(time.Second * 3):
+		// TODO: The 3 second above should become a config
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
 
 	w.Write([]byte(immiID))
 }
@@ -96,28 +102,38 @@ func (s *FunnelServer) batcher() {
 		timer := time.NewTimer(s.batchDuration)
 		select {
 		case immi := <-s.batchChan:
-			timer.Stop() // This is not needed perhaps, just to be safe
 			s.batch = append(s.batch, immi)
 		case <-s.ctx.Done():
-			// TODO: Graceful shutdown
+			close(s.batchChan)
+			timer.Stop()
+			s.appendBatch(false)
+			return
 		case <-timer.C:
-			if len(s.batch) == 0 {
-				// No Immis to write as of now
-				continue
-			}
-			immis := s.batch
-			s.batch = make([]dao.Immi, 0, s.batchSize)
-			err := s.db.AppendImmis(immis)
-			if err != nil {
-				if errors.Is(err, idb.ErrInternal) {
-					// Likely case as validations would have
-					// handled user errors already
-					s.log.Error().Err(err)
-				} else {
-					// TODO: Handle user errors
-					_ = err
-				}
-			}
+			timer.Stop()
+			s.appendBatch(true)
 		}
+	}
+}
+
+func (s *FunnelServer) appendBatch(reallocBuffer bool) {
+	if len(s.batch) == 0 {
+		// No Immis to write as of now
+		return
+	}
+	immis := s.batch
+
+	if reallocBuffer {
+		s.batch = make([]dao.Immi, 0, s.batchSize)
+	}
+
+	// TODO: Change context
+	err := s.db.AppendImmis(context.Background(), immis)
+	if err != nil {
+		// We could log immis for better debugging, but
+		// that would explode the log message size. Perhaps
+		// printing just the IDs may help debug in case of
+		// xid collisions.
+		s.log.Error().Err(err).Msg(idb.PGErr(err))
+		return
 	}
 }

@@ -1,24 +1,65 @@
 package idb
 
 import (
+	"context"
 	"fmt"
 	"immi/pkg/dao"
 	"os"
 	"strings"
 
+	pgx "github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pkg/errors"
 )
 
 type pg struct {
+	conn *pgxpool.Pool
 }
 
 func NewPGDB() (*pg, error) {
+	connStr, err := DBConnStr()
+	if err != nil {
+		return nil, err
+	}
 
-	return &pg{}, nil
+	conn, err := pgxpool.New(context.Background(), connStr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pg{conn: conn}, nil
 }
 
-func (pg *pg) AppendImmis(immis []dao.Immi) error {
-	return nil
+func PGErr(err error) string {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		return pgErr.Error()
+	}
+
+	return ""
+}
+
+func (pg *pg) AppendImmis(ctx context.Context, immis []dao.Immi) error {
+	_, err := pg.conn.CopyFrom(
+		ctx,
+		pgx.Identifier{"immis"},
+		[]string{"id", "user_id", "msg", "ctime"},
+		pgx.CopyFromSlice(len(immis), func(i int) ([]any, error) {
+			return []any{
+				immis[i].ID,
+				immis[i].UserID,
+				immis[i].Msg,
+				immis[i].CTime,
+			}, nil
+		}),
+	)
+
+	if err != nil {
+
+	}
+
+	return err
 }
 
 var (

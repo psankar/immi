@@ -1,17 +1,12 @@
 package idb
 
 import (
-	"errors"
+	"context"
 	"immi/pkg/dao"
 )
 
 // By making this an interface, we can potentially
 // migrate to a different db if needed
 type IDB interface {
-	AppendImmis([]dao.Immi) error
+	AppendImmis(context.Context, []dao.Immi) error
 }
-
-var (
-	ErrInternal = errors.New("INTERNAL_ERROR")
-	ErrUser     = errors.New("USER_ERROR")
-)

@@ -34,7 +34,9 @@ var logger zerolog.Logger
 var _ = BeforeSuite(func() {
 	logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
 
-	db, err := idb.NewPGDB()
+	var err error
+
+	db, err = idb.NewPGDB()
 	Expect(err).To(BeNil())
 
 	config := funnel.FunnelConfig{
