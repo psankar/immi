@@ -2,7 +2,7 @@ package main
 
 import (
 	"immi/internal/funnel"
-	"log"
+	"immi/internal/idb"
 	"net/http"
 	"os"
 	"time"
@@ -11,19 +11,27 @@ import (
 )
 
 func main() {
-	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
+	log := zerolog.New(os.Stderr).With().Timestamp().Logger()
+	db, err := idb.NewPGDB()
+	if err != nil {
+		log.Fatal().Err(err)
+		return
+	}
 
 	server, err := funnel.NewServer(funnel.FunnelConfig{
 		BatchSize:     1024,
 		BatchDuration: time.Second * 5,
-		Logger:        &logger,
+		DB:            db,
+		Logger:        &log,
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
+		return
 	}
 
 	err = http.ListenAndServe(":8080", server.Handler())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
+		return
 	}
 }
