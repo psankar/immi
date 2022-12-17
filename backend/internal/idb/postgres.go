@@ -54,11 +54,6 @@ func (pg *pg) AppendImmis(ctx context.Context, immis []dao.Immi) error {
 			}, nil
 		}),
 	)
-
-	if err != nil {
-
-	}
-
 	return err
 }
 
@@ -107,4 +102,24 @@ func DBConnStr() (string, error) {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		user, password, host, port, db)
 	return connStr, nil
+}
+
+func EnsureTestDB() error {
+	for _, i := range []struct {
+		env   string
+		value string
+	}{
+		{PostgresDB, "immi"},
+		{PostgresUser, "immi"},
+		{PostgresPassword, "password"},
+		{PostgresHost, "localhost"},
+		{PostgresPort, "5432"},
+	} {
+		err := os.Setenv(i.env, i.value)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

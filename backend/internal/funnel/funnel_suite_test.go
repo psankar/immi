@@ -34,7 +34,8 @@ var logger zerolog.Logger
 var _ = BeforeSuite(func() {
 	logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
 
-	var err error
+	err := idb.EnsureTestDB()
+	Expect(err).To(BeNil())
 
 	db, err = idb.NewPGDB()
 	Expect(err).To(BeNil())
