@@ -9,6 +9,9 @@ godeps:
 funnel:
 	cd backend && go build -o cmd/funnel/funnel cmd/funnel/funnel.go
 
+accounts:
+	cd backend && go build -o cmd/accounts/accounts cmd/accounts/accounts.go
+
 test:
 	cd backend && ginkgo -r -v -race --trace --coverprofile=.coverage-report.out ./...
 

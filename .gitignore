@@ -1,2 +1,3 @@
 *.out
 backend/cmd/funnel/funnel
+backend/cmd/accounts/accounts
