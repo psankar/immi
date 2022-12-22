@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"immi/pkg/dao"
+	"immi/pkg/immi"
 	"os"
 	"strings"
 
+	"github.com/jackc/pgerrcode"
 	pgx "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -31,13 +33,13 @@ func NewPGDB() (*pg, error) {
 	return &pg{conn: conn}, nil
 }
 
-func PGErr(err error) string {
+func PGErrMsg(err error) string {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		return pgErr.Error()
 	}
 
-	return ""
+	return err.Error()
 }
 
 func (pg *pg) AppendImmis(ctx context.Context, immis []dao.Immi) error {
@@ -57,6 +59,35 @@ func (pg *pg) AppendImmis(ctx context.Context, immis []dao.Immi) error {
 	return err
 }
 
+func (pg *pg) CreateUser(ctx context.Context, user dao.User) error {
+	query := `
+INSERT INTO users (username, email_address, password_hash, user_state)
+	VALUES $1, $2, $3, $4`
+
+	_, err := pg.conn.Exec(ctx, query, user.Username, user.EmailAddress,
+		user.PasswordHash, user.UserState)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.UniqueViolation {
+				switch pgErr.ColumnName {
+				case "username":
+					return immi.ErrDuplicateUsername
+				default:
+					// If we add a new unique column later,
+					// we can handle it here.
+					return immi.ErrImmiInternal
+				}
+			}
+			return immi.ErrImmiInternal
+		}
+		return err
+	}
+
+	return nil
+}
+
+// Private Errors for backend; For Public errors for clients, see immi package
 var (
 	ErrPGDB       = errors.New("invalid POSTGRES_DB")
 	ErrPGUser     = errors.New("invalid POSTGRES_USER")

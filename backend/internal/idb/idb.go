@@ -9,4 +9,5 @@ import (
 // migrate to a different db if needed
 type IDB interface {
 	AppendImmis(context.Context, []dao.Immi) error
+	CreateUser(context.Context, dao.User) error
 }

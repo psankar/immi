@@ -1,5 +1,19 @@
 BEGIN;
 
+-- TODO: CREATE INDEX for all the tables
+
+CREATE TABLE users (
+  id BIGSERIAL PRIMARY KEY,
+  username TEXT NOT NULL,
+  email_address TEXT NOT NULL, -- TODO: Should we allow duplicates here ?
+  password_hash TEXT NOT NULL,
+  user_state TEXT NOT NULL -- Perhaps we can use enum here ?!
+);
+
+ALTER TABLE users ADD CONSTRAINT users_unique_username UNIQUE (username);
+
+---
+
 CREATE TABLE immis (
   -- primary key
   id TEXT NOT NULL,
@@ -14,6 +28,7 @@ CREATE TABLE immis (
 );
 
 ALTER TABLE immis ADD CONSTRAINT immis_unique_id UNIQUE (id);
-CREATE INDEX immis_id_idx ON immis(id);
+ALTER TABLE immis ADD CONSTRAINT immis_fk_accounts
+  FOREIGN KEY (user_id) REFERENCES users(id);
 
 COMMIT;

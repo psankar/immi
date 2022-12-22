@@ -11,3 +11,15 @@ type Immi struct {
 	Msg    string
 	CTime  time.Time
 }
+
+var (
+	ActiveUser   = "ACTIVE_USER"
+	DisabledUser = "DISABLED_USER"
+)
+
+type User struct {
+	Username     string
+	EmailAddress string
+	PasswordHash string
+	UserState    string
+}

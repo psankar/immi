@@ -132,7 +132,7 @@ func (s *FunnelServer) appendBatch(reallocBuffer bool) {
 		// that would explode the log message size. Perhaps
 		// printing just the IDs may help debug in case of
 		// xid collisions.
-		s.log.Error().Err(err).Msg(idb.PGErr(err))
+		s.log.Error().Msg(idb.PGErrMsg(err))
 		return
 	}
 }
