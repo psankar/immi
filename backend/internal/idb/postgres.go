@@ -62,7 +62,7 @@ func (pg *pg) AppendImmis(ctx context.Context, immis []dao.Immi) error {
 func (pg *pg) CreateUser(ctx context.Context, user dao.User) error {
 	query := `
 INSERT INTO users (username, email_address, password_hash, user_state)
-	VALUES $1, $2, $3, $4`
+	VALUES ($1, $2, $3, $4)`
 
 	_, err := pg.conn.Exec(ctx, query, user.Username, user.EmailAddress,
 		user.PasswordHash, user.UserState)
@@ -70,18 +70,18 @@ INSERT INTO users (username, email_address, password_hash, user_state)
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				switch pgErr.ColumnName {
-				case "username":
+				switch pgErr.ConstraintName {
+				case "users_unique_username":
 					return immi.ErrDuplicateUsername
 				default:
-					// If we add a new unique column later,
+					// If we add a new unique constraint later,
 					// we can handle it here.
 					return immi.ErrImmiInternal
 				}
 			}
 			return immi.ErrImmiInternal
 		}
-		return err
+		return immi.ErrImmiInternal
 	}
 
 	return nil

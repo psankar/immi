@@ -49,7 +49,7 @@ func NewServer(config FunnelConfig) (*FunnelServer, error) {
 
 func (s *FunnelServer) Handler() http.Handler {
 	r := http.NewServeMux()
-	r.HandleFunc("/immis", s.immiHandler)
+	r.HandleFunc("/", s.immiHandler)
 	return r
 }
 

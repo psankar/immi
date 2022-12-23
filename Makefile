@@ -24,6 +24,13 @@ env:
 	./kind-with-registry.sh
 	kubectl cluster-info --context kind-kind
 	kubectl create ns immi
+	kubectl apply -f nginx-ingress.yaml
+	# Wait for a few seconds to let the pods come up
+	sleep 5
+	kubectl wait --namespace ingress-nginx \
+		--for=condition=ready pod \
+		--selector=app.kubernetes.io/component=controller \
+		--timeout=90s
 	kind load docker-image localhost:5001/postgres:14.6
 
 	kubectl apply -f ./immi-dev-env.yaml

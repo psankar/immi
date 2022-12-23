@@ -26,6 +26,7 @@ func main() {
 		return
 	}
 
+	log.Error().Msg("Starting Accounts service")
 	err = http.ListenAndServe(":8080", server.Handler())
 	if err != nil {
 		log.Fatal().Err(err)

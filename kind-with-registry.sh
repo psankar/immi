@@ -21,6 +21,23 @@ containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${reg_port}"]
     endpoint = ["http://${reg_name}:5000"]
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+    - |
+      kind: InitConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          node-labels: "ingress-ready=true"
+  extraPortMappings:
+    - containerPort: 80
+      hostPort: 80
+      protocol: TCP
+    - containerPort: 443
+      hostPort: 443
+      protocol: TCP
+- role: worker
+- role: worker
 EOF
 
 # connect the registry to the cluster network if not already connected

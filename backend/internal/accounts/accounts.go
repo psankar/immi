@@ -32,9 +32,9 @@ func NewServer(config AccountsConfig) (AccountsServer, error) {
 
 func (s *AccountsServer) Handler() http.Handler {
 	r := http.NewServeMux()
-	r.HandleFunc("/accounts/signup", s.signupHandler)
-	r.HandleFunc("/accounts/login", s.loginHandler)
-	r.HandleFunc("/accounts/logout", s.logoutHandler)
+	r.HandleFunc("/signup", s.signupHandler)
+	r.HandleFunc("/login", s.loginHandler)
+	r.HandleFunc("/logout", s.logoutHandler)
 	return r
 }
 
@@ -51,6 +51,7 @@ func (s *AccountsServer) signupHandler(w http.ResponseWriter, r *http.Request) {
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
+		s.logger.Err(err).Msg("Password hash generation failed")
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
@@ -67,14 +68,16 @@ func (s *AccountsServer) signupHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var userError immi.UserError
 		if errors.As(err, &userError) {
+			// TODO: errors.As would return true, even for ErrImmiInternal
 			http.Error(w, userError.Error(), http.StatusBadRequest)
 			return
 		}
 
-		s.logger.Err(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *AccountsServer) loginHandler(w http.ResponseWriter, r *http.Request) {
