@@ -2,8 +2,6 @@ package e2e_tests_test
 
 import (
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"strings"
 	"testing"
@@ -38,8 +36,6 @@ var _ = Describe("Accounts testing", func() {
 				strings.NewReader(req),
 			)
 			Expect(err).To(BeNil())
-			b, err := io.ReadAll(resp.Body)
-			log.Println(string(b), err)
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 		}
 	})
