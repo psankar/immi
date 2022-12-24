@@ -37,7 +37,7 @@ var _ = BeforeSuite(func() {
 	err := idb.EnsureTestDB()
 	Expect(err).To(BeNil())
 
-	db, err = idb.NewPGDB()
+	db, err = idb.NewPGDB(&logger)
 	Expect(err).To(BeNil())
 
 	config := funnel.FunnelConfig{
