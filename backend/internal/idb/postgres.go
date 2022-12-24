@@ -108,6 +108,8 @@ WHERE username = $1`
 	var user dao.User
 	err := pg.conn.QueryRow(ctx, query, username).Scan(&user)
 	if err != nil {
+		// Returning a zero value instead of pointer, may
+		// put less pressure on the GC
 		if err == sql.ErrNoRows {
 			return user, immi.ErrAuthenticationFailed
 		}
