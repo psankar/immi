@@ -15,13 +15,15 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 )
 
 type pg struct {
 	conn *pgxpool.Pool
+	log  *zerolog.Logger
 }
 
-func NewPGDB() (*pg, error) {
+func NewPGDB(log *zerolog.Logger) (*pg, error) {
 	connStr, err := DBConnStr()
 	if err != nil {
 		return nil, err
@@ -32,7 +34,7 @@ func NewPGDB() (*pg, error) {
 		return nil, err
 	}
 
-	return &pg{conn: conn}, nil
+	return &pg{conn: conn, log: log}, nil
 }
 
 func PGErrMsg(err error) string {
@@ -58,6 +60,7 @@ func (pg *pg) AppendImmis(ctx context.Context, immis []dao.Immi) *common.Error {
 			}, nil
 		}),
 	)
+	pg.log.Err(err).Msg("COPY failed")
 	return common.Err(err, http.StatusInternalServerError)
 }
 
