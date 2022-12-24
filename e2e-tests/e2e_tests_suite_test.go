@@ -52,6 +52,12 @@ var _ = Describe("Accounts testing", func() {
 		Expect(err).To(BeNil())
 		Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
 
+		req = `{"Username": "abcdef", "Password": "user2"}`
+		resp, err = http.Post(ImmiURL+"/accounts/login", json,
+			strings.NewReader(req))
+		Expect(err).To(BeNil())
+		Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
+
 		req = `{"Username": "user1", "Password": "user1"}`
 		resp, err = http.Post(ImmiURL+"/accounts/login", json,
 			strings.NewReader(req))
