@@ -3,7 +3,6 @@ package accounts
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"immi/internal/idb"
 	"immi/pkg/dao"
 	"immi/pkg/immi"
@@ -59,21 +58,14 @@ func (s *AccountsServer) signupHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: validate fields
 
 	// TODO: Fix context usage
-	err = s.db.CreateUser(context.Background(), dao.User{
+	ierr := s.db.CreateUser(context.Background(), dao.User{
 		Username:     signupReq.Username,
 		EmailAddress: signupReq.EmailAddress,
 		PasswordHash: string(passwordBytes),
 		UserState:    dao.ActiveUser,
 	})
-	if err != nil {
-		var userError immi.UserError
-		if errors.As(err, &userError) {
-			// TODO: errors.As would return true, even for ErrImmiInternal
-			http.Error(w, userError.Error(), http.StatusBadRequest)
-			return
-		}
-
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if ierr != nil {
+		http.Error(w, ierr.Err, ierr.HTTPCode)
 		return
 	}
 

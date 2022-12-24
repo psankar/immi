@@ -1,6 +1,9 @@
 package immi
 
-import "errors"
+import (
+	"immi/internal/common"
+	"net/http"
+)
 
 // The contents of this file are exposed to the client code.
 // So, changes to this should always be backwards compatible.
@@ -18,19 +21,26 @@ type Login struct {
 
 const UserHeader = "X-IMMI-USER"
 
-var (
-	ErrImmiInternal = errors.New("ERROR_IMMI_INTERNAL")
-)
-
 type NewImmi struct {
 	Msg string
 }
 
-type UserError error
-
-// Immi User Errors
+// Errors exposed to the clients from the backend
 var (
-	ErrDuplicateUsername UserError = errors.New("ERROR_DUPLICATE_USERNAME")
-	ErrInvalidUsername   UserError = errors.New("ERROR_INVALID_USERNAME")
-	ErrInvalidPassword   UserError = errors.New("ERROR_INVALID_PASSWORD")
+	ErrDuplicateUsername = &common.Error{
+		Err:      "ERROR_DUPLICATE_USERNAME",
+		HTTPCode: http.StatusConflict,
+	}
+	ErrInvalidUsername = &common.Error{
+		Err:      "ERROR_INVALID_USERNAME",
+		HTTPCode: http.StatusBadRequest,
+	}
+	ErrInvalidPassword = &common.Error{
+		Err:      "ERROR_INVALID_PASSWORD",
+		HTTPCode: http.StatusBadRequest,
+	}
+	ErrImmiInternal = &common.Error{
+		Err:      "ERROR_IMMI_INTERNAL",
+		HTTPCode: http.StatusInternalServerError,
+	}
 )

@@ -3,8 +3,10 @@ package idb
 import (
 	"context"
 	"fmt"
+	"immi/internal/common"
 	"immi/pkg/dao"
 	"immi/pkg/immi"
+	"net/http"
 	"os"
 	"strings"
 
@@ -42,7 +44,7 @@ func PGErrMsg(err error) string {
 	return err.Error()
 }
 
-func (pg *pg) AppendImmis(ctx context.Context, immis []dao.Immi) error {
+func (pg *pg) AppendImmis(ctx context.Context, immis []dao.Immi) *common.Error {
 	_, err := pg.conn.CopyFrom(
 		ctx,
 		pgx.Identifier{"immis"},
@@ -56,10 +58,10 @@ func (pg *pg) AppendImmis(ctx context.Context, immis []dao.Immi) error {
 			}, nil
 		}),
 	)
-	return err
+	return common.Err(err, http.StatusInternalServerError)
 }
 
-func (pg *pg) CreateUser(ctx context.Context, user dao.User) error {
+func (pg *pg) CreateUser(ctx context.Context, user dao.User) *common.Error {
 	query := `
 INSERT INTO users (username, email_address, password_hash, user_state)
 	VALUES ($1, $2, $3, $4)`
