@@ -91,7 +91,7 @@ func (s *AccountsServer) loginHandler(w http.ResponseWriter, r *http.Request) {
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash),
 		[]byte(loginReq.Password))
 	if err != nil {
-		http.Error(w, "", http.StatusUnauthorized)
+		http.Error(w, immi.ErrAuthenticationFailed.Err, http.StatusUnauthorized)
 		return
 	}
 
@@ -107,6 +107,7 @@ func (s *AccountsServer) loginHandler(w http.ResponseWriter, r *http.Request) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
+		s.logger.Err(err).Msg("JWT generation failed")
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}

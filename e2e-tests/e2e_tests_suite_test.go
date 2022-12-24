@@ -2,6 +2,8 @@ package e2e_tests_test
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"strings"
 	"testing"
@@ -18,6 +20,7 @@ func TestE2eTests(t *testing.T) {
 const (
 	ImmiURL  = "http://localhost"
 	NumUsers = 100
+	json     = "application/json"
 )
 
 var _ = Describe("Accounts testing", func() {
@@ -41,4 +44,20 @@ var _ = Describe("Accounts testing", func() {
 	})
 
 	// TODO: Tests for invalid signups that would fail validation
+
+	It("Signin users", func() {
+		req := `{"Username": "user1", "Password": "user2"}`
+		resp, err := http.Post(ImmiURL+"/accounts/login", json,
+			strings.NewReader(req))
+		Expect(err).To(BeNil())
+		Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
+
+		req = `{"Username": "user1", "Password": "user1"}`
+		resp, err = http.Post(ImmiURL+"/accounts/login", json,
+			strings.NewReader(req))
+		Expect(err).To(BeNil())
+		Expect(resp.StatusCode).To(Equal(http.StatusOK))
+		body, err := io.ReadAll(resp.Body)
+		log.Println(string(body), err)
+	})
 })

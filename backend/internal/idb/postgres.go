@@ -2,7 +2,6 @@ package idb
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"immi/internal/common"
 	"immi/pkg/dao"
@@ -96,25 +95,25 @@ INSERT INTO users (username, email_address, password_hash, user_state)
 	return nil
 }
 
-func (pg *pg) GetUser(
-	ctx context.Context,
-	username string,
-) (dao.User, *common.Error) {
+func (pg *pg) GetUser(ctx context.Context, username string) (
+	dao.User, *common.Error) {
 	query := `
 SELECT username, email_address, password_hash, user_state
 FROM users
 WHERE username = $1`
 
 	var user dao.User
-	err := pg.conn.QueryRow(ctx, query, username).Scan(&user)
+	err := pg.conn.QueryRow(ctx, query, username).
+		Scan(&user.Username, &user.EmailAddress,
+			&user.PasswordHash, &user.UserState)
 	if err != nil {
 		// Returning a zero value instead of pointer, may
-		// put less pressure on the GC
-		if err == sql.ErrNoRows {
+		// put less pressure on the GC and avoids crashes
+		if err == pgx.ErrNoRows {
 			return user, immi.ErrAuthenticationFailed
 		}
 
-		pg.log.Err(err).Msg("GetUser failed")
+		pg.log.Err(err).Msg("pg.GetUser failed")
 		return user, immi.ErrImmiInternal
 	}
 

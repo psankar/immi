@@ -7,7 +7,5 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-const (
-	// TODO: Read from a kubernetes secret
-	jwtKey = "secret"
-)
+// TODO: Read from a kubernetes secret
+var jwtKey = []byte("secret")
