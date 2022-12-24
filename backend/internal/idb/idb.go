@@ -11,4 +11,5 @@ import (
 type IDB interface {
 	AppendImmis(context.Context, []dao.Immi) *common.Error
 	CreateUser(context.Context, dao.User) *common.Error
+	GetUser(ctx context.Context, username string) (dao.User, *common.Error)
 }

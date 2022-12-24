@@ -2,6 +2,7 @@ package idb
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"immi/internal/common"
 	"immi/pkg/dao"
@@ -81,15 +82,41 @@ INSERT INTO users (username, email_address, password_hash, user_state)
 				default:
 					// If we add a new unique constraint later,
 					// we can handle it here.
+					pg.log.Err(err).Msg("CreateUser failed 1")
 					return immi.ErrImmiInternal
 				}
 			}
+			pg.log.Err(err).Msg("CreateUser failed 2")
 			return immi.ErrImmiInternal
 		}
+		pg.log.Err(err).Msg("CreateUser failed 3")
 		return immi.ErrImmiInternal
 	}
 
 	return nil
+}
+
+func (pg *pg) GetUser(
+	ctx context.Context,
+	username string,
+) (dao.User, *common.Error) {
+	query := `
+SELECT username, email_address, password_hash, user_state
+FROM users
+WHERE username = $1`
+
+	var user dao.User
+	err := pg.conn.QueryRow(ctx, query, username).Scan(&user)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, immi.ErrAuthenticationFailed
+		}
+
+		pg.log.Err(err).Msg("GetUser failed")
+		return user, immi.ErrImmiInternal
+	}
+
+	return user, nil
 }
 
 // Private Errors for backend; For Public errors for clients, see immi package

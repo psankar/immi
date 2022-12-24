@@ -7,7 +7,9 @@ import (
 	"immi/pkg/dao"
 	"immi/pkg/immi"
 	"net/http"
+	"time"
 
+	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -73,7 +75,43 @@ func (s *AccountsServer) signupHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *AccountsServer) loginHandler(w http.ResponseWriter, r *http.Request) {
+	var loginReq immi.Login
+	err := json.NewDecoder(r.Body).Decode(&loginReq)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
+	user, ierr := s.db.GetUser(context.Background(), loginReq.Username)
+	if ierr != nil {
+		http.Error(w, ierr.Err, ierr.HTTPCode)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash),
+		[]byte(loginReq.Password))
+	if err != nil {
+		http.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
+	// TODO: We need a better system here with refresh tokens
+	expirationTime := time.Now().Add(5 * time.Minute)
+	claims := Claims{
+		Username: user.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(jwtKey)
+	if err != nil {
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte(tokenString))
 }
 
 func (s *AccountsServer) logoutHandler(w http.ResponseWriter, r *http.Request) {

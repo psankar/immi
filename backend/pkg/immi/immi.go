@@ -43,4 +43,8 @@ var (
 		Err:      "ERROR_IMMI_INTERNAL",
 		HTTPCode: http.StatusInternalServerError,
 	}
+	ErrAuthenticationFailed = &common.Error{
+		Err:      "ERROR_AUTHENTICATION_FAILED",
+		HTTPCode: http.StatusUnauthorized,
+	}
 )
