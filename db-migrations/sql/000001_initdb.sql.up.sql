@@ -31,4 +31,21 @@ ALTER TABLE immis ADD CONSTRAINT immis_unique_id UNIQUE (id);
 ALTER TABLE immis ADD CONSTRAINT immis_fk_accounts
   FOREIGN KEY (user_id) REFERENCES users(id);
 
+---
+
+CREATE TABLE listys (
+  -- primary key
+  id TEXT NOT NULL,
+
+  user_id BIGINT NOT NULL,
+  listy_name TEXT NOT NULL,
+  ctime TIMESTAMP WITHOUT TIME ZONE NOT NULL
+);
+
+ALTER TABLE listys ADD CONSTRAINT listys_unique_id UNIQUE (id);
+ALTER TABLE listys ADD CONSTRAINT listys_fk_accounts
+  FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE listys ADD CONSTRAINT listys_unique_user_id__listy_name
+  UNIQUE (user_id, listy_name);
+
 COMMIT;

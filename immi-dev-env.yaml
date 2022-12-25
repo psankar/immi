@@ -148,3 +148,10 @@ spec:
                 name: immis
                 port:
                   number: 8080
+          - pathType: Prefix
+            path: /listys(/|$)(.*)
+            backend:
+              service:
+                name: listys
+                port:
+                  number: 8080

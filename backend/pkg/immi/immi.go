@@ -25,6 +25,11 @@ type NewImmi struct {
 	Msg string
 }
 
+type NewList struct {
+    Name string
+}
+
+
 // Errors exposed to the clients from the backend
 var (
 	ErrDuplicateUsername = &common.Error{
@@ -47,4 +52,9 @@ var (
 		Err:      "ERROR_AUTHENTICATION_FAILED",
 		HTTPCode: http.StatusUnauthorized,
 	}
+
+    ErrDuplicateListName = &common.Error{
+        Err: "ERROR_DUPLICATE_LISTNAME",
+        HTTPCode: http.StatusConflict,
+    }
 )

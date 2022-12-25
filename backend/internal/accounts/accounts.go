@@ -60,14 +60,14 @@ func (s *AccountsServer) signupHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: validate fields
 
 	// TODO: Fix context usage
-	ierr := s.db.CreateUser(context.Background(), dao.User{
+	dbErr := s.db.CreateUser(context.Background(), dao.User{
 		Username:     signupReq.Username,
 		EmailAddress: signupReq.EmailAddress,
 		PasswordHash: string(passwordBytes),
 		UserState:    dao.ActiveUser,
 	})
-	if ierr != nil {
-		http.Error(w, ierr.Err, ierr.HTTPCode)
+	if dbErr != nil {
+		http.Error(w, dbErr.Err, dbErr.HTTPCode)
 		return
 	}
 
@@ -82,9 +82,9 @@ func (s *AccountsServer) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, ierr := s.db.GetUser(context.Background(), loginReq.Username)
-	if ierr != nil {
-		http.Error(w, ierr.Err, ierr.HTTPCode)
+	user, dbErr := s.db.GetUser(context.Background(), loginReq.Username)
+	if dbErr != nil {
+		http.Error(w, dbErr.Err, dbErr.HTTPCode)
 		return
 	}
 

@@ -1,1 +1,1 @@
-DROP TABLE users, immis;
+DROP TABLE users, immis, listys;

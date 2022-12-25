@@ -23,3 +23,10 @@ type User struct {
 	PasswordHash string
 	UserState    string
 }
+
+type Listy struct {
+	ID        string
+	UserID    int64
+	ListyName string
+	CTime     time.Time
+}
