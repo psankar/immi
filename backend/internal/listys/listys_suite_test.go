@@ -1,11 +1,11 @@
-package funnel_test
+package listys_test
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"immi/internal/funnel"
 	"immi/internal/idb"
+	"immi/internal/listys"
 	"immi/pkg/immi"
 	"io"
 	"log"
@@ -14,16 +14,15 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/rs/zerolog"
 )
 
-func TestFunnel(t *testing.T) {
+func TestListys(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Funnel Suite")
+	RunSpecs(t, "Listys Suite")
 }
 
 var db idb.IDB
@@ -40,20 +39,18 @@ var _ = BeforeSuite(func() {
 	db, err = idb.NewPGDB(&logger)
 	Expect(err).To(BeNil())
 
-	config := funnel.FunnelConfig{
-		BatchSize:     3,
-		BatchDuration: time.Second * 3,
-		DB:            db,
-		Logger:        &logger,
+	config := listys.ListysConfig{
+		DB:     db,
+		Logger: &logger,
 	}
-	server, err := funnel.NewServer(config)
+	server, err := listys.NewServer(config)
 	Expect(err).To(BeNil())
 
 	testServer = httptest.NewServer(server.Handler())
-	immiURL = fmt.Sprintf("%s/immis", testServer.URL)
+	immiURL = fmt.Sprintf("%s/create-listy", testServer.URL)
 })
 
-var _ = Describe("immis", func() {
+var _ = Describe("listys", func() {
 	var _ = It("test without user ID", func() {
 		resp, err := testServer.Client().Get(immiURL)
 		Expect(err).To(BeNil())
@@ -61,8 +58,8 @@ var _ = Describe("immis", func() {
 	})
 
 	var _ = It("test with invalid userID", func() {
-		body, err := json.Marshal(immi.NewImmi{
-			Msg: "This is a test message",
+		body, err := json.Marshal(immi.NewListy{
+			Name: "list1",
 		})
 		Expect(err).To(BeNil())
 
@@ -80,8 +77,8 @@ var _ = Describe("immis", func() {
 	})
 
 	var _ = It("test with empty userID", func() {
-		body, err := json.Marshal(immi.NewImmi{
-			Msg: "This is a test message",
+		body, err := json.Marshal(immi.NewListy{
+			Name: "list1",
 		})
 		Expect(err).To(BeNil())
 
@@ -113,9 +110,9 @@ var _ = Describe("immis", func() {
 		Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
 	})
 
-	var _ = It("test with 1 immi", func() {
-		body, err := json.Marshal(immi.NewImmi{
-			Msg: "This is a test message",
+	var _ = It("test with 1 list", func() {
+		body, err := json.Marshal(immi.NewListy{
+			Name: "list1",
 		})
 		Expect(err).To(BeNil())
 
@@ -125,7 +122,7 @@ var _ = Describe("immis", func() {
 			bytes.NewReader(body),
 		)
 		// TODO: Seed some test users
-		req.Header.Add(immi.UserHeader, "123")
+		req.Header.Add(immi.UserHeader, "1")
 		Expect(err).To(BeNil())
 
 		resp, err := testServer.Client().Do(req)
@@ -135,8 +132,5 @@ var _ = Describe("immis", func() {
 		b, err := io.ReadAll(resp.Body)
 		Expect(err).To(BeNil())
 		log.Println("Response is: ", string(b))
-
-		// Wait for some time, so the batch write would complete
-		<-time.After(time.Second * 10)
 	})
 })

@@ -66,8 +66,4 @@ var _ = Describe("Accounts testing", func() {
 		body, err := io.ReadAll(resp.Body)
 		log.Println(string(body), err)
 	})
-
-	It("Create lists", func() {
-		req := ``
-	})
 })

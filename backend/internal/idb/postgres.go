@@ -100,7 +100,7 @@ func (pg *pg) CreateListy(
 	newListy dao.Listy,
 ) *common.Error {
 	query := `
-INSERT INTO lists (id, list_name, user_id, ctime)
+INSERT INTO listys (id, listy_name, user_id, ctime)
 VALUES ($1, $2, $3, $4)`
 
 	_, err := pg.conn.Exec(ctx, query, newListy.ID, newListy.ListyName,
@@ -114,7 +114,7 @@ VALUES ($1, $2, $3, $4)`
 					// xid collision
 					return immi.ErrImmiInternal
 				case "listys_unique_user_id__listy_name":
-					return immi.ErrDuplicateListName
+					return immi.ErrDuplicateListyName
 				default:
 					// If we add a new unique constraint later,
 					// we can handle it here.

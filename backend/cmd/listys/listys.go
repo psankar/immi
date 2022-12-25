@@ -17,7 +17,7 @@ func main() {
 		return
 	}
 
-	server, err := listys.NewServer(listys.ListyConfig{
+	server, err := listys.NewServer(listys.ListysConfig{
 		DB:     db,
 		Logger: &log,
 	})

@@ -14,7 +14,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type ListyConfig struct {
+type ListysConfig struct {
 	Logger *zerolog.Logger
 	DB     idb.IDB
 }
@@ -24,7 +24,7 @@ type ListyServer struct {
 	db     idb.IDB
 }
 
-func NewServer(config ListyConfig) (ListyServer, error) {
+func NewServer(config ListysConfig) (ListyServer, error) {
 	return ListyServer{
 		logger: config.Logger,
 		db:     config.DB,
@@ -33,9 +33,9 @@ func NewServer(config ListyConfig) (ListyServer, error) {
 
 func (s *ListyServer) Handler() http.Handler {
 	r := http.NewServeMux()
-	r.HandleFunc("/create-list", s.createListHandler)
-	r.HandleFunc("/add-to-list", s.addToListHandler)
-	r.HandleFunc("/rm-from-list", s.rmFromListHandler)
+	r.HandleFunc("/create-listy", s.createListHandler)
+	r.HandleFunc("/add-to-listy", s.addToListHandler)
+	r.HandleFunc("/rm-from-listy", s.rmFromListHandler)
 	return r
 }
 
@@ -51,7 +51,7 @@ func (s *ListyServer) createListHandler(
 		return
 	}
 
-	var newList immi.NewList
+	var newList immi.NewListy
 	err = json.NewDecoder(r.Body).Decode(&newList)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
