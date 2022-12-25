@@ -26,7 +26,8 @@ type NewImmi struct {
 }
 
 type NewListy struct {
-	Name string
+	RouteName   string
+	DisplayName string
 }
 
 // Errors exposed to the clients from the backend
@@ -51,9 +52,12 @@ var (
 		Err:      "ERROR_AUTHENTICATION_FAILED",
 		HTTPCode: http.StatusUnauthorized,
 	}
-
-	ErrDuplicateListyName = &common.Error{
-		Err:      "ERROR_DUPLICATE_LISTNAME",
+	ErrDuplicateDisplayName = &common.Error{
+		Err:      "ERROR_DUPLICATE_DISPLAYNAME",
+		HTTPCode: http.StatusConflict,
+	}
+	ErrDuplicateRouteName = &common.Error{
+		Err:      "ERROR_DUPLICATE_ROUTENAME",
 		HTTPCode: http.StatusConflict,
 	}
 )

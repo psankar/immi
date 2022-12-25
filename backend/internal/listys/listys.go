@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rs/xid"
 	"github.com/rs/zerolog"
 )
 
@@ -58,14 +57,12 @@ func (s *ListyServer) createListyHandler(
 		return
 	}
 
-	listID := xid.New().String()
-
 	// TODO: Fix context usage
 	dbErr := s.db.CreateListy(context.Background(), dao.Listy{
-		ID:        listID,
-		UserID:    userID,
-		ListyName: newList.Name,
-		CTime:     time.Now().UTC(),
+		UserID:      userID,
+		DisplayName: newList.DisplayName,
+		RouteName:   newList.RouteName,
+		CTime:       time.Now().UTC(),
 	})
 	if dbErr != nil {
 		http.Error(w, dbErr.Err, dbErr.HTTPCode)
@@ -75,11 +72,19 @@ func (s *ListyServer) createListyHandler(
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *ListyServer) addToListyHandler(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (s *ListyServer) addToListyHandler(w http.ResponseWriter,
+	r *http.Request) {
+	userIDRaw := r.Header.Get(immi.UserHeader)
+	userID, err := strconv.ParseInt(userIDRaw, 0, 64)
+	if err != nil {
+		s.logger.Error().Msgf("invalid userID %q", userIDRaw)
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
 
+	_ = userID
+
+	// TODO: Authorize userID and insert to DB
 }
 
 func (s *ListyServer) rmFromListyHandler(

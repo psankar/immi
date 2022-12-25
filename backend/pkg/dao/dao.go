@@ -25,8 +25,9 @@ type User struct {
 }
 
 type Listy struct {
-	ID        string
-	UserID    int64
-	ListyName string
-	CTime     time.Time
+	ID          int64
+	UserID      int64
+	RouteName   string
+	DisplayName string
+	CTime       time.Time
 }

@@ -5,7 +5,7 @@ BEGIN;
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
   username TEXT NOT NULL,
-  email_address TEXT NOT NULL, -- TODO: Should we allow duplicates here ?
+  email_address TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   user_state TEXT NOT NULL -- Perhaps we can use enum here ?!
 );
@@ -28,24 +28,38 @@ CREATE TABLE immis (
 );
 
 ALTER TABLE immis ADD CONSTRAINT immis_unique_id UNIQUE (id);
-ALTER TABLE immis ADD CONSTRAINT immis_fk_accounts
+ALTER TABLE immis ADD CONSTRAINT immis_fk_users
   FOREIGN KEY (user_id) REFERENCES users(id);
 
 ---
 
 CREATE TABLE listys (
-  -- primary key
-  id TEXT NOT NULL,
-
+  id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL,
-  listy_name TEXT NOT NULL,
+  route_name TEXT NOT NULL,
+  display_name TEXT NOT NULL,
   ctime TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 
-ALTER TABLE listys ADD CONSTRAINT listys_unique_id UNIQUE (id);
 ALTER TABLE listys ADD CONSTRAINT listys_fk_accounts
   FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE listys ADD CONSTRAINT listys_unique_user_id__listy_name
-  UNIQUE (user_id, listy_name);
+ALTER TABLE listys ADD CONSTRAINT listys_unique_user_id__route_name
+  UNIQUE (user_id, route_name);
+ALTER TABLE listys ADD CONSTRAINT listys_unique_user_id__display_name
+  UNIQUE (user_id, display_name);
+
+---
+
+CREATE TABLE graf (
+  listy_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL,
+  ctime TIMESTAMP WITHOUT TIME ZONE NOT NULL
+);
+ALTER TABLE graf ADD CONSTRAINT graf_fk_accounts
+  FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE graf ADD CONSTRAINT graf_fk_listys
+  FOREIGN KEY (listy_id) REFERENCES listys(id);
+ALTER TABLE graf ADD CONSTRAINT graf_unique_listy_id__user_id
+  UNIQUE (user_id, listy_id);
 
 COMMIT;

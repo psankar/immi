@@ -59,7 +59,8 @@ var _ = Describe("listys", func() {
 
 	var _ = It("test with invalid userID", func() {
 		body, err := json.Marshal(immi.NewListy{
-			Name: "list1",
+			DisplayName: "list1",
+			RouteName:   "list1",
 		})
 		Expect(err).To(BeNil())
 
@@ -78,7 +79,8 @@ var _ = Describe("listys", func() {
 
 	var _ = It("test with empty userID", func() {
 		body, err := json.Marshal(immi.NewListy{
-			Name: "list1",
+			DisplayName: "list1",
+			RouteName:   "list1",
 		})
 		Expect(err).To(BeNil())
 
@@ -112,7 +114,8 @@ var _ = Describe("listys", func() {
 
 	var _ = It("test with 1 list", func() {
 		body, err := json.Marshal(immi.NewListy{
-			Name: "list1",
+			DisplayName: "list1",
+			RouteName:   "list1",
 		})
 		Expect(err).To(BeNil())
 

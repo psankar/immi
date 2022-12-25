@@ -95,37 +95,47 @@ INSERT INTO users (username, email_address, password_hash, user_state)
 	return nil
 }
 
-func (pg *pg) CreateListy(
-	ctx context.Context,
-	newListy dao.Listy,
-) *common.Error {
+func (pg *pg) CreateListy(ctx context.Context,
+	newListy dao.Listy) *common.Error {
 	query := `
-INSERT INTO listys (id, listy_name, user_id, ctime)
-VALUES ($1, $2, $3, $4)`
+INSERT INTO listys (id, display_name, route_name, user_id, ctime)
+VALUES ($1, $2, $3, $4, $5)`
 
-	_, err := pg.conn.Exec(ctx, query, newListy.ID, newListy.ListyName,
-		newListy.UserID, newListy.CTime)
+	_, err := pg.conn.Exec(ctx, query, newListy.ID, newListy.DisplayName,
+		newListy.RouteName, newListy.UserID, newListy.CTime)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
 				switch pgErr.ConstraintName {
-				case "listys_unique_id":
-					// xid collision
-					return immi.ErrImmiInternal
-				case "listys_unique_user_id__listy_name":
-					return immi.ErrDuplicateListyName
+				case "listys_unique_user_id__display_name":
+					return immi.ErrDuplicateDisplayName
+				case "listys_unique_user_id__route_name":
+					return immi.ErrDuplicateRouteName
 				default:
 					// If we add a new unique constraint later,
 					// we can handle it here.
 					pg.log.Err(err).Msg("CreateListy failed 1")
 					return immi.ErrImmiInternal
 				}
+			} else if pgErr.Code == pgerrcode.ForeignKeyViolation {
+				switch pgErr.ConstraintName {
+				case "listys_fk_accounts":
+					pg.log.Err(err).
+						Int("UserID", int(newListy.UserID)).
+						Msg("INVALID UserID detected")
+					return immi.ErrImmiInternal
+				default:
+					// If we add a new foreign key constraint later,
+					// we can handle it here.
+					pg.log.Err(err).Msg("CreateListy failed 2")
+					return immi.ErrImmiInternal
+				}
 			}
-			pg.log.Err(err).Msg("CreateListy failed 2")
+			pg.log.Err(err).Msg("CreateListy failed 3")
 			return immi.ErrImmiInternal
 		}
-		pg.log.Err(err).Msg("CreateListy failed 3")
+		pg.log.Err(err).Msg("CreateListy failed 4")
 		return immi.ErrImmiInternal
 	}
 
