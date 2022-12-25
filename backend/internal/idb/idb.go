@@ -4,7 +4,7 @@ import (
 	"context"
 	"immi/internal/common"
 	"immi/pkg/dao"
-    "immi/pkg/immi"
+	"immi/pkg/immi"
 )
 
 // By making this an interface, we can potentially
@@ -14,5 +14,6 @@ type IDB interface {
 	CreateUser(context.Context, dao.User) *common.Error
 	GetUser(ctx context.Context, username string) (dao.User, *common.Error)
 	CreateListy(ctx context.Context, newListy dao.Listy) *common.Error
-    AddGraf(ctx context.Context, graf immi.Graf) *common.Error
+	AddGraf(ctx context.Context, graf immi.Graf,
+		listyOwnerID int64) *common.Error
 }

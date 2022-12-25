@@ -142,20 +142,17 @@ VALUES ($1, $2, $3, $4, $5)`
 	return nil
 }
 
-func (pg *pg) AddGraf(ctx context.Context, graf immi.Graf) *common.Error {
+func (pg *pg) AddGraf(ctx context.Context,
+	graf immi.Graf, listyOwnerID int64) *common.Error {
 	query := `
-WITH l AS (
-	SELECT id, user_id FROM listys WHERE route_name = $1
-), u AS (
-	SELECT id FROM users WHERE username = $2
-)
 INSERT INTO graf (listy_id, user_id, ctime) VALUES (
-	(SELECT l.id FROM l, u WHERE l.user_id = u.id),
-	(SELECT l.user_id FROM l, u WHERE l.user_id = u.id),
+	(SELECT id FROM listys WHERE route_name = $1 AND user_id = $2),
+	(SELECT id FROM users WHERE username = $3),
 	TIMEZONE('utc', NOW())
 ) ON CONFLICT DO NOTHING;
 	`
-	_, err := pg.conn.Exec(ctx, query, graf.ListRouteName, graf.Username)
+	_, err := pg.conn.Exec(ctx, query, graf.ListRouteName,
+		listyOwnerID, graf.Username)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {

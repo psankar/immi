@@ -90,7 +90,7 @@ func (s *ListyServer) addToListyHandler(w http.ResponseWriter,
 	}
 
 	// TODO: Fix context usage
-	dbErr := s.db.AddGraf(context.Background(), graf)
+	dbErr := s.db.AddGraf(context.Background(), graf, userID)
 	if dbErr != nil {
 		http.Error(w, dbErr.Err, dbErr.HTTPCode)
 		return
