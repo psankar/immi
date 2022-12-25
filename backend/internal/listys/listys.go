@@ -82,9 +82,21 @@ func (s *ListyServer) addToListyHandler(w http.ResponseWriter,
 		return
 	}
 
-	_ = userID
+	var graf immi.Graf
+	err = json.NewDecoder(r.Body).Decode(&graf)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	// TODO: Authorize userID and insert to DB
+	// TODO: Fix context usage
+	dbErr := s.db.AddGraf(context.Background(), graf)
+	if dbErr != nil {
+		http.Error(w, dbErr.Err, dbErr.HTTPCode)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *ListyServer) rmFromListyHandler(

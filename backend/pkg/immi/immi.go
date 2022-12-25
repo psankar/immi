@@ -30,6 +30,11 @@ type NewListy struct {
 	DisplayName string
 }
 
+type Graf struct {
+	ListRouteName string
+	Username      string
+}
+
 // Errors exposed to the clients from the backend
 var (
 	ErrDuplicateUsername = &common.Error{
@@ -59,5 +64,9 @@ var (
 	ErrDuplicateRouteName = &common.Error{
 		Err:      "ERROR_DUPLICATE_ROUTENAME",
 		HTTPCode: http.StatusConflict,
+	}
+	ErrListAddFailed = &common.Error{
+		Err:      "ERROR_LIST_ADD_FAILED",
+		HTTPCode: http.StatusBadRequest,
 	}
 )

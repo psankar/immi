@@ -142,6 +142,36 @@ VALUES ($1, $2, $3, $4, $5)`
 	return nil
 }
 
+func (pg *pg) AddGraf(ctx context.Context, graf immi.Graf) *common.Error {
+	query := `
+WITH l AS (
+	SELECT id, user_id FROM listys WHERE route_name = $1
+), u AS (
+	SELECT id FROM users WHERE username = $2
+)
+INSERT INTO graf (listy_id, user_id, ctime) VALUES (
+	(SELECT l.id FROM l, u WHERE l.user_id = u.id),
+	(SELECT l.user_id FROM l, u WHERE l.user_id = u.id),
+	TIMEZONE('utc', NOW())
+) ON CONFLICT DO NOTHING;
+	`
+	_, err := pg.conn.Exec(ctx, query, graf.ListRouteName, graf.Username)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == pgerrcode.NotNullViolation {
+				return immi.ErrListAddFailed
+			}
+			pg.log.Err(pgErr).Msg("AddGraf failed with pgErr")
+			return immi.ErrImmiInternal
+		}
+		pg.log.Err(err).Msg("AddGraf failed")
+		return immi.ErrImmiInternal
+	}
+
+	return nil
+}
+
 func (pg *pg) GetUser(ctx context.Context, username string) (
 	dao.User, *common.Error) {
 	query := `
