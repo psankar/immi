@@ -33,13 +33,13 @@ func NewServer(config ListysConfig) (ListyServer, error) {
 
 func (s *ListyServer) Handler() http.Handler {
 	r := http.NewServeMux()
-	r.HandleFunc("/create-listy", s.createListHandler)
-	r.HandleFunc("/add-to-listy", s.addToListHandler)
-	r.HandleFunc("/rm-from-listy", s.rmFromListHandler)
+	r.HandleFunc("/create-listy", s.createListyHandler)
+	r.HandleFunc("/add-to-listy", s.addToListyHandler)
+	r.HandleFunc("/rm-from-listy", s.rmFromListyHandler)
 	return r
 }
 
-func (s *ListyServer) createListHandler(
+func (s *ListyServer) createListyHandler(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
@@ -75,11 +75,14 @@ func (s *ListyServer) createListHandler(
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *ListyServer) addToListHandler(w http.ResponseWriter, r *http.Request) {
+func (s *ListyServer) addToListyHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 
 }
 
-func (s *ListyServer) rmFromListHandler(
+func (s *ListyServer) rmFromListyHandler(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
