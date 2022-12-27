@@ -60,8 +60,12 @@ func (pg *pg) AppendImmis(ctx context.Context, immis []dao.Immi) *common.Error {
 			}, nil
 		}),
 	)
-	pg.log.Err(err).Msg("COPY failed")
-	return common.Err(err, http.StatusInternalServerError)
+	if err != nil {
+		pg.log.Error().Err(err).Msgf("COPY failed")
+		return common.Err(err, http.StatusInternalServerError)
+	}
+
+	return nil
 }
 
 func (pg *pg) CreateUser(ctx context.Context, user dao.User) *common.Error {
