@@ -20,7 +20,7 @@ func TestE2eTests(t *testing.T) {
 const (
 	ImmiURL  = "http://localhost"
 	NumUsers = 100
-	json     = "application/json"
+	J        = "application/json"
 )
 
 var _ = Describe("Accounts testing", func() {
@@ -47,19 +47,19 @@ var _ = Describe("Accounts testing", func() {
 
 	It("Signin users", func() {
 		req := `{"Username": "user1", "Password": "user2"}`
-		resp, err := http.Post(ImmiURL+"/accounts/login", json,
+		resp, err := http.Post(ImmiURL+"/accounts/login", J,
 			strings.NewReader(req))
 		Expect(err).To(BeNil())
 		Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
 
 		req = `{"Username": "abcdef", "Password": "user2"}`
-		resp, err = http.Post(ImmiURL+"/accounts/login", json,
+		resp, err = http.Post(ImmiURL+"/accounts/login", J,
 			strings.NewReader(req))
 		Expect(err).To(BeNil())
 		Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
 
 		req = `{"Username": "user1", "Password": "user1"}`
-		resp, err = http.Post(ImmiURL+"/accounts/login", json,
+		resp, err = http.Post(ImmiURL+"/accounts/login", J,
 			strings.NewReader(req))
 		Expect(err).To(BeNil())
 		Expect(resp.StatusCode).To(Equal(http.StatusOK))

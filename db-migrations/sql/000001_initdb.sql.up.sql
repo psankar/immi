@@ -29,7 +29,7 @@ CREATE TABLE immis (
 
 ALTER TABLE immis ADD CONSTRAINT immis_unique_id UNIQUE (id);
 ALTER TABLE immis ADD CONSTRAINT immis_fk_users
-  FOREIGN KEY (user_id) REFERENCES users(id);
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ---
 
@@ -42,7 +42,7 @@ CREATE TABLE listys (
 );
 
 ALTER TABLE listys ADD CONSTRAINT listys_fk_accounts
-  FOREIGN KEY (user_id) REFERENCES users(id);
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE listys ADD CONSTRAINT listys_unique_user_id__route_name
   UNIQUE (user_id, route_name);
 ALTER TABLE listys ADD CONSTRAINT listys_unique_user_id__display_name
@@ -56,9 +56,9 @@ CREATE TABLE graf (
   ctime TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 ALTER TABLE graf ADD CONSTRAINT graf_fk_accounts
-  FOREIGN KEY (user_id) REFERENCES users(id);
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE graf ADD CONSTRAINT graf_fk_listys
-  FOREIGN KEY (listy_id) REFERENCES listys(id);
+  FOREIGN KEY (listy_id) REFERENCES listys(id) ON DELETE CASCADE;
 ALTER TABLE graf ADD CONSTRAINT graf_unique_listy_id__user_id
   UNIQUE (user_id, listy_id);
 
