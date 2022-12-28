@@ -102,11 +102,11 @@ INSERT INTO users (username, email_address, password_hash, user_state)
 func (pg *pg) CreateListy(ctx context.Context,
 	newListy dao.Listy) *common.Error {
 	query := `
-INSERT INTO listys (id, display_name, route_name, user_id, ctime)
-VALUES ($1, $2, $3, $4, $5)`
+INSERT INTO listys (user_id, route_name, display_name, ctime)
+VALUES ($1, $2, $3, $4)`
 
-	_, err := pg.conn.Exec(ctx, query, newListy.ID, newListy.DisplayName,
-		newListy.RouteName, newListy.UserID, newListy.CTime)
+	_, err := pg.conn.Exec(ctx, query, newListy.UserID, newListy.RouteName,
+		newListy.DisplayName, newListy.CTime)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {

@@ -108,8 +108,8 @@ var _ = Describe("create listy", func() {
 			immiURL,
 			bytes.NewReader(body),
 		)
-		req.Header.Add(immi.UserHeader, "123asd")
 		Expect(err).To(BeNil())
+		req.Header.Add(immi.UserHeader, "123asd")
 
 		resp, err := testServer.Client().Do(req)
 		Expect(err).To(BeNil())
