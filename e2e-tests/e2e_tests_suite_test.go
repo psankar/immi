@@ -2,6 +2,7 @@ package e2e_tests_test
 
 import (
 	"fmt"
+	"immi/pkg/immi"
 	"io"
 	"log"
 	"net/http"
@@ -23,7 +24,15 @@ const (
 	J        = "application/json"
 )
 
+var (
+	userTokens []string
+)
+
 var _ = Describe("Accounts testing", func() {
+	It("Initialise", func() {
+		userTokens = make([]string, NumUsers)
+	})
+
 	It("Signup valid users", func() {
 		for i := 0; i < NumUsers; i++ {
 			req := fmt.Sprintf(
@@ -43,9 +52,8 @@ var _ = Describe("Accounts testing", func() {
 		}
 	})
 
-	// TODO: Tests for invalid signups that would fail validation
-
 	It("Signin users", func() {
+		// This could be moved to the accounts package unit-test
 		req := `{"Username": "user1", "Password": "user2"}`
 		resp, err := http.Post(ImmiURL+"/accounts/login", J,
 			strings.NewReader(req))
@@ -65,5 +73,51 @@ var _ = Describe("Accounts testing", func() {
 		Expect(resp.StatusCode).To(Equal(http.StatusOK))
 		body, err := io.ReadAll(resp.Body)
 		log.Println(string(body), err)
+	})
+
+	It("Save login tokens to array", func() {
+		for i := 0; i < NumUsers; i++ {
+			req := fmt.Sprintf(
+				`{"Username": "user%d", "Password": "user%d"}`,
+				i, i)
+			resp, err := http.Post(ImmiURL+"/accounts/login", J,
+				strings.NewReader(req))
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(http.StatusOK))
+			body, err := io.ReadAll(resp.Body)
+			Expect(err).To(BeNil())
+			loginToken := string(body)
+			Expect(loginToken).ToNot(BeEmpty())
+			userTokens[i] = loginToken
+		}
+	})
+
+	It("Create Listys for each user", func() {
+		for i := 0; i < NumUsers; i++ {
+			for j := 0; j < 10; j++ {
+				log.Printf("Creating list 'list%d' for user 'user%d'", j, i)
+				body := fmt.Sprintf(
+					`{
+						"DisplayName": "list%d",
+						"RouteName":   "list%d"
+					}`,
+					j, j)
+
+				req, err := http.NewRequest(
+					http.MethodPost,
+					ImmiURL+"/listys/create-listy",
+					strings.NewReader(body),
+				)
+				Expect(err).To(BeNil())
+
+				// TODO: This would work only when the tests were run
+				// on a clean vanilla database. Also, this MUST fail in prod,
+				// as the UserHeader MUST be over-written at the port of entry.
+				req.Header.Add(immi.UserHeader, fmt.Sprintf("%d", i+1))
+				resp, err := http.DefaultClient.Do(req)
+				Expect(err).To(BeNil())
+				Expect(resp.StatusCode).To(Equal(http.StatusOK))
+			}
+		}
 	})
 })
