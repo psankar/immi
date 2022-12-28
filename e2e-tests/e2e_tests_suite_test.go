@@ -120,4 +120,36 @@ var _ = Describe("Accounts testing", func() {
 			}
 		}
 	})
+
+	It("Add Users to Listys", func() {
+		for i := 0; i < NumUsers; i++ {
+			for j := 0; j < 10; j++ {
+				for k := j; k < NumUsers; k += 10 {
+					log.Printf("Adding user%d to list%d of user%d", k, j, i)
+
+					body := fmt.Sprintf(
+						`{
+							"ListRouteName":   "list%d",
+							"Username": "user%d"
+						}`,
+						j, k)
+
+					req, err := http.NewRequest(
+						http.MethodPost,
+						ImmiURL+"/listys/add-to-listy",
+						strings.NewReader(body),
+					)
+					Expect(err).To(BeNil())
+
+					// TODO: This would work only when the tests were run
+					// on a clean vanilla database. Also, this MUST fail in prod,
+					// as the UserHeader MUST be over-written at the port of entry.
+					req.Header.Add(immi.UserHeader, fmt.Sprintf("%d", i+1))
+					resp, err := http.DefaultClient.Do(req)
+					Expect(err).To(BeNil())
+					Expect(resp.StatusCode).To(Equal(http.StatusOK))
+				}
+			}
+		}
+	})
 })

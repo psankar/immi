@@ -59,3 +59,7 @@ migrate:
 devdeploy:
 	cd backend && KO_DOCKER_REPO=kind.local ko apply -f backend-dev.yaml
 	kubectl get pods -n immi
+
+e2e: env-clean env migrate devdeploy
+	sleep 5
+	cd e2e-tests && ginkgo -v
