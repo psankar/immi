@@ -63,3 +63,7 @@ ALTER TABLE graf ADD CONSTRAINT graf_unique_listy_id__user_id
   UNIQUE (user_id, listy_id);
 
 COMMIT;
+
+-- TRUNCATE users CASCADE;
+-- ALTER SEQUENCE users_id_seq RESTART WITH 1;
+-- ALTER SEQUENCE listys_id_seq RESTART WITH 1;
