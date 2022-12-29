@@ -202,9 +202,9 @@ var _ = Describe("Immi backend testing", func() {
 					err = resp.Body.Close()
 					Expect(err).To(BeNil())
 
-					// Sleep a random time (until 3 seconds) in between requests
+					// Sleep a random time (until 1 second) in between requests
 					time.Sleep(
-						time.Duration(rand.Intn(3000)) * time.Microsecond,
+						time.Duration(rand.Intn(1000)) * time.Millisecond,
 					)
 				}
 
