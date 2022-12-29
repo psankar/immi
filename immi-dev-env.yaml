@@ -142,10 +142,10 @@ spec:
                 port:
                   number: 8080
           - pathType: Prefix
-            path: /immis(/|$)(.*)
+            path: /funnel(/|$)(.*)
             backend:
               service:
-                name: immis
+                name: funnel
                 port:
                   number: 8080
           - pathType: Prefix

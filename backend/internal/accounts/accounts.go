@@ -96,7 +96,7 @@ func (s *AccountsServer) loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: We need a better system here with refresh tokens
-	expirationTime := time.Now().Add(5 * time.Minute)
+	expirationTime := time.Now().Add(15 * time.Minute)
 	claims := Claims{
 		Username: user.Username,
 		RegisteredClaims: jwt.RegisteredClaims{

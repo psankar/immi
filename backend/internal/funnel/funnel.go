@@ -85,6 +85,7 @@ func (s *FunnelServer) immiHandler(w http.ResponseWriter, r *http.Request) {
 		// Successfully sent
 	case <-time.After(time.Second * 3):
 		// TODO: The 3 second above should become a config
+		s.log.Error().Msg("Timed out after 3 seconds. The channels are full.")
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
