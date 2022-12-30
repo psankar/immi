@@ -71,7 +71,7 @@ CREATE TABLE tl(
   listy_id BIGINT NOT NULL,
   immi_id TEXT NOT NULL,
   dbctime TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc')
-)
+);
 
 ALTER TABLE tl ADD CONSTRAINT tl_fk_listys
   FOREIGN KEY (listy_id) REFERENCES listys(id) ON DELETE CASCADE;
