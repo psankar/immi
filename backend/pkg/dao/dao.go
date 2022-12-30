@@ -17,6 +17,10 @@ var (
 	DisabledUser = "DISABLED_USER"
 )
 
+var (
+	EpochTime time.Time = time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+)
+
 type User struct {
 	Username     string
 	EmailAddress string
