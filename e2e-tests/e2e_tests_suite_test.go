@@ -24,7 +24,7 @@ func TestE2eTests(t *testing.T) {
 const (
 	ImmiURL  = "http://localhost"
 	NumUsers = 100
-	NumImmis = 1000
+	NumImmis = 10000
 	J        = "application/json"
 )
 
@@ -134,7 +134,7 @@ var _ = Describe("Immi backend testing", func() {
 		for i := 0; i < NumUsers; i++ {
 			for j := 0; j < 10; j++ {
 				for k := j; k < NumUsers; k += 10 {
-					log.Printf("Adding user%d to list%d of user%d", k, j, i)
+					// log.Printf("Adding user%d to list%d of user%d", k, j, i)
 
 					body := fmt.Sprintf(
 						`{
@@ -164,7 +164,7 @@ var _ = Describe("Immi backend testing", func() {
 		}
 	})
 
-	It("Post Immies", func() {
+	FIt("Post Immies", func() {
 		var wg sync.WaitGroup
 		for i := 0; i < NumUsers; i++ {
 			wg.Add(1)
@@ -172,8 +172,7 @@ var _ = Describe("Immi backend testing", func() {
 				defer GinkgoRecover()
 				defer wg.Done()
 				for j := 0; j < NumImmis; j++ {
-					body := fmt.Sprintf(
-						`{"Msg":   "User%d TestMsg: %d"}`,
+					body := fmt.Sprintf(`{"Msg":   "User%d TestMsg: %d"}`,
 						workerID, j)
 
 					req, err := http.NewRequest(
@@ -202,9 +201,9 @@ var _ = Describe("Immi backend testing", func() {
 					err = resp.Body.Close()
 					Expect(err).To(BeNil())
 
-					// Sleep a random time (until 1 second) in between requests
+					// Sleep a random time (until 3 seconds) in between requests
 					time.Sleep(
-						time.Duration(rand.Intn(1000)) * time.Millisecond,
+						time.Duration(rand.Intn(3000)) * time.Millisecond,
 					)
 				}
 

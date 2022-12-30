@@ -24,7 +24,8 @@ CREATE TABLE immis (
   user_id BIGINT NOT NULL,
 
   msg TEXT NOT NULL,
-  ctime TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  ctime TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  dbmtime TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc')
 );
 
 ALTER TABLE immis ADD CONSTRAINT immis_unique_id UNIQUE (id);
@@ -38,7 +39,8 @@ CREATE TABLE listys (
   user_id BIGINT NOT NULL,
   route_name TEXT NOT NULL,
   display_name TEXT NOT NULL,
-  ctime TIMESTAMP WITHOUT TIME ZONE NOT NULL
+  ctime TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  last_refresh_time TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 
 ALTER TABLE listys ADD CONSTRAINT listys_fk_accounts
@@ -55,12 +57,28 @@ CREATE TABLE graf (
   user_id BIGINT NOT NULL,
   ctime TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
+
 ALTER TABLE graf ADD CONSTRAINT graf_fk_accounts
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE graf ADD CONSTRAINT graf_fk_listys
   FOREIGN KEY (listy_id) REFERENCES listys(id) ON DELETE CASCADE;
 ALTER TABLE graf ADD CONSTRAINT graf_unique_listy_id__user_id
   UNIQUE (user_id, listy_id);
+
+---
+
+CREATE TABLE tl(
+  listy_id BIGINT NOT NULL,
+  immi_id TEXT NOT NULL,
+  dbctime TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc')
+)
+
+ALTER TABLE tl ADD CONSTRAINT tl_fk_listys
+  FOREIGN KEY (listy_id) REFERENCES listys(id) ON DELETE CASCADE;
+ALTER TABLE tl ADD CONSTRAINT tl_fk_immis
+  FOREIGN KEY (immi_id) REFERENCES immis(id) ON DELETE CASCADE;
+
+---
 
 COMMIT;
 
