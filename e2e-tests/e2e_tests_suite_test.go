@@ -164,7 +164,7 @@ var _ = Describe("Immi backend testing", func() {
 		}
 	})
 
-	FIt("Post Immies", func() {
+	It("Post Immies", func() {
 		var wg sync.WaitGroup
 		for i := 0; i < NumUsers; i++ {
 			wg.Add(1)
