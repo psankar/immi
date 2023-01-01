@@ -77,6 +77,8 @@ ALTER TABLE tl ADD CONSTRAINT tl_fk_listys
   FOREIGN KEY (listy_id) REFERENCES listys(id) ON DELETE CASCADE;
 ALTER TABLE tl ADD CONSTRAINT tl_fk_immis
   FOREIGN KEY (immi_id) REFERENCES immis(id) ON DELETE CASCADE;
+ALTER TABLE tl ADD CONSTRAINT tl_unique_listy_id__immi_id
+  UNIQUE (listy_id, immi_id);
 
 ---
 

@@ -35,6 +35,8 @@ func (s *ListyServer) Handler() http.Handler {
 	r.HandleFunc("/create-listy", s.createListyHandler)
 	r.HandleFunc("/add-to-listy", s.addToListyHandler)
 	r.HandleFunc("/rm-from-listy", s.rmFromListyHandler)
+	r.HandleFunc("/get-timeline", s.getTimelineHandler)
+	r.HandleFunc("/subscribe", s.subscribeHandler)
 	return r
 }
 
@@ -104,4 +106,59 @@ func (s *ListyServer) rmFromListyHandler(
 	r *http.Request,
 ) {
 
+}
+
+func (s *ListyServer) subscribeHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	userIDRaw := r.Header.Get(immi.UserHeader)
+	userID, err := strconv.ParseInt(userIDRaw, 0, 64)
+	if err != nil {
+		s.logger.Error().Msgf("invalid userID %q", userIDRaw)
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	var req immi.SubscribeListyTimeline
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Get the ListyID from the given req.ListyRouteName
+	// and the userID.
+
+	// Create a SSE stream for the given client request and the ListyID
+
+	// Then add the ListyID+SSEStreamHandle to a queue of
+	// active Listys to refresh.
+
+	// A new component Tywin should loop on the queue of active Listys
+	// and refresh the Listy.
+	_ = userID
+
+	const refreshListSQL = `
+
+INSERT INTO tl(listy_id, immi_id)
+  SELECT 111, id FROM immis WHERE user_id IN (
+	  SELECT user_id FROM graf WHERE listy_id = 111
+	)
+	AND ctime > (SELECT GREATEST(
+	  (SELECT TIMEZONE('utc', NOW() - INTERVAL '7 DAYS')),
+      (SELECT last_refresh_time FROM listys WHERE id = 111)
+	))
+	AND ctime < (SELECT TIMEZONE('utc', NOW()))
+  ON CONFLICT DO NOTHING
+  ;
+  `
+	_ = refreshListSQL
+}
+
+func (s *ListyServer) getTimelineHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	s.subscribeHandler(w, r)
 }

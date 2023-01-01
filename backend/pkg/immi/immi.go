@@ -35,6 +35,11 @@ type Graf struct {
 	Username      string
 }
 
+type SubscribeListyTimeline struct {
+	// For now, we will keep all Listys private
+	ListyRouteName string
+}
+
 // Errors exposed to the clients from the backend
 var (
 	ErrDuplicateUsername = &common.Error{

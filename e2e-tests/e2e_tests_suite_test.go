@@ -164,7 +164,7 @@ var _ = Describe("Immi backend testing", func() {
 		}
 	})
 
-	It("Post Immies", func() {
+	FIt("Post Immies", func() {
 		var wg sync.WaitGroup
 		for i := 0; i < NumUsers; i++ {
 			wg.Add(1)
@@ -203,7 +203,7 @@ var _ = Describe("Immi backend testing", func() {
 
 					// Sleep a random time (until 3 seconds) in between requests
 					time.Sleep(
-						time.Duration(rand.Intn(3000)) * time.Millisecond,
+						time.Duration(rand.Intn(2000)) * time.Millisecond,
 					)
 				}
 
