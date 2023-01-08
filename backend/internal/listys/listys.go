@@ -3,6 +3,7 @@ package listys
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"immi/internal/idb"
 	"immi/pkg/dao"
 	"immi/pkg/immi"
@@ -108,10 +109,7 @@ func (s *ListyServer) rmFromListyHandler(
 
 }
 
-func (s *ListyServer) subscribeHandler(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (s *ListyServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
 	userIDRaw := r.Header.Get(immi.UserHeader)
 	userID, err := strconv.ParseInt(userIDRaw, 0, 64)
 	if err != nil {
@@ -120,27 +118,57 @@ func (s *ListyServer) subscribeHandler(
 		return
 	}
 
-	var req immi.SubscribeListyTimeline
+	var req immi.SubscribeListyTL
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Get the ListyID from the given req.ListyRouteName
-	// and the userID.
+	// TODO: Fix context usage
+	listy, dbErr := s.db.GetListy(context.Background(),
+		userID, req.ListyRouteName)
+	if dbErr != nil {
+		http.Error(w, dbErr.Err, dbErr.HTTPCode)
+		return
+	}
 
-	// Create a SSE stream for the given client request and the ListyID
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
 
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		s.logger.Error().Msg("Could not init http.Flusher")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	defer func() {
+		s.logger.Debug().Msg("Client closed connection. All cleanups complete")
+		// TODO: Remove listyID from the active listys eventually
+	}()
+
+	for {
+		select {
+		// TODO: Listen for listy.ID updates and send to the client
+		case message := <-time.After(time.Second * 5):
+			s.logger.Printf("sending %q after Nsec to %#v", message, listy)
+			fmt.Fprintf(w, "data: %s\n\n", message)
+			flusher.Flush()
+		case <-r.Context().Done():
+			s.logger.Print("Client closed connection")
+			return
+		}
+	}
 	// Then add the ListyID+SSEStreamHandle to a queue of
 	// active Listys to refresh.
 
 	// A new component Tywin should loop on the queue of active Listys
 	// and refresh the Listy.
-	_ = userID
 
 	const refreshListSQL = `
-
 INSERT INTO tl(listy_id, immi_id)
   SELECT 111, id FROM immis WHERE user_id IN (
 	  SELECT user_id FROM graf WHERE listy_id = 111

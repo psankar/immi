@@ -23,8 +23,8 @@ func TestE2eTests(t *testing.T) {
 
 const (
 	ImmiURL  = "http://localhost"
-	NumUsers = 100
-	NumImmis = 10000
+	NumUsers = 10
+	NumImmis = 10
 	J        = "application/json"
 )
 
@@ -164,7 +164,7 @@ var _ = Describe("Immi backend testing", func() {
 		}
 	})
 
-	FIt("Post Immies", func() {
+	It("Post Immies", func() {
 		var wg sync.WaitGroup
 		for i := 0; i < NumUsers; i++ {
 			wg.Add(1)

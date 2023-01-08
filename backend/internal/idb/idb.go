@@ -16,4 +16,6 @@ type IDB interface {
 	CreateListy(ctx context.Context, newListy dao.Listy) *common.Error
 	AddGraf(ctx context.Context, graf immi.Graf,
 		listyOwnerID int64) *common.Error
+	GetListy(ctx context.Context, userID int64,
+		ListyRouteName string) (dao.Listy, *common.Error)
 }

@@ -35,7 +35,7 @@ type Graf struct {
 	Username      string
 }
 
-type SubscribeListyTimeline struct {
+type SubscribeListyTL struct {
 	// For now, we will keep all Listys private
 	ListyRouteName string
 }
@@ -73,5 +73,9 @@ var (
 	ErrListAddFailed = &common.Error{
 		Err:      "ERROR_LIST_ADD_FAILED",
 		HTTPCode: http.StatusBadRequest,
+	}
+	ErrInvalidListy = &common.Error{
+		Err:      "ERROR_INVALID_LISTY",
+		HTTPCode: http.StatusNotFound,
 	}
 )

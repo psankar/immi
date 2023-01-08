@@ -2,6 +2,7 @@ package idb
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"immi/internal/common"
 	"immi/pkg/dao"
@@ -144,6 +145,28 @@ VALUES ($1, $2, $3, $4, $5)`
 	}
 
 	return nil
+}
+
+func (pg *pg) GetListy(ctx context.Context, userID int64,
+	routeName string) (dao.Listy, *common.Error) {
+	query := `
+SELECT id, user_id, route_name, display_name, ctime, last_refresh_time
+FROM listys
+WHERE user_id = $1 AND route_name = $2
+`
+	var listy dao.Listy
+	err := pg.conn.QueryRow(ctx, query, userID, routeName).Scan(
+		&listy.ID, &listy.UserID, &listy.RouteName, &listy.DisplayName,
+		&listy.CTime, &listy.LastRefreshTime)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return listy, immi.ErrInvalidListy
+		}
+		pg.log.Err(err).Msg("AddGraf failed")
+		return listy, immi.ErrImmiInternal
+	}
+
+	return listy, nil
 }
 
 func (pg *pg) AddGraf(ctx context.Context,
